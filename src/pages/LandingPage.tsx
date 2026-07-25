@@ -1,11 +1,14 @@
-const LandingPage = () => {
-  return (
-    <main className="min-h-screen flex items-center justify-center">
-      <h1 className="text-6xl font-bold">
-        Decision Studio
-      </h1>
-    </main>
-  );
-};
+import Navbar from "../components/layout/Navbar";
+import Hero from "../components/landing/Hero";
 
-export default LandingPage;
+export default function LandingPage() {
+  return (
+    <>
+      <Navbar />
+
+      <main>
+        <Hero />
+      </main>
+    </>
+  );
+}
