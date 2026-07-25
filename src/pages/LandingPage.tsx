@@ -1,5 +1,8 @@
 import Navbar from "../components/layout/Navbar";
 import Hero from "../components/landing/Hero";
+import Features from "../components/landing/Features";
+import CTA from "../components/landing/CTA";
+import Footer from "../components/layout/Footer";
 
 export default function LandingPage() {
   return (
@@ -8,7 +11,11 @@ export default function LandingPage() {
 
       <main>
         <Hero />
+        <Features />
+        <CTA />
       </main>
+
+      <Footer />
     </>
   );
 }
