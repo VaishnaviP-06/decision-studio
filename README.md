@@ -20,7 +20,7 @@ Built for **Frontend Wars 2026** — focused on creating a polished, client-side
 
 <br/>
 
-[Live Demo]((https://decision-studio-dusky.vercel.app/)) ·
+[Live Demo](https://decision-studio-dusky.vercel.app/)
 
 </div>
 
