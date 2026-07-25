@@ -2,7 +2,6 @@ import { Handle, Position } from "@xyflow/react";
 import {
   CircleDollarSign,
   ShieldAlert,
-  TrendingUp,
 } from "lucide-react";
 
 type DecisionCardData = {

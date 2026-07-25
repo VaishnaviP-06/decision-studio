@@ -1,0 +1,174 @@
+import { Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import type { ReactNode } from "react";
+
+import { useDecisionStore } from "../../store/decisionStore";
+import type { RiskLevel } from "../../types/decision";
+
+const RISK_OPTIONS: RiskLevel[] = ["Low", "Medium", "High"];
+const COLOR_OPTIONS = ["#6366F1", "#10B981", "#F59E0B", "#EC4899", "#0EA5E9", "#A855F7"];
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+const inputClass =
+  "w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm outline-none transition-colors duration-200 focus:border-[var(--primary)]";
+
+export default function RightPanel() {
+  const selectedNodeId = useDecisionStore((s) => s.selectedNodeId);
+  const node = useDecisionStore((s) =>
+    s.nodes.find((n) => n.id === s.selectedNodeId)
+  );
+  const updateNode = useDecisionStore((s) => s.updateNode);
+  const deleteNode = useDecisionStore((s) => s.deleteNode);
+
+  if (!selectedNodeId || !node) {
+    return (
+      <aside className="flex h-full w-full flex-col items-center justify-center border-l border-[var(--border)] bg-[var(--surface)] p-6 text-center">
+        <p className="text-sm text-[var(--text-muted)]">
+          Select a decision
+          <br />
+          to edit details
+        </p>
+      </aside>
+    );
+  }
+
+  const data = node.data;
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.aside
+        key={node.id}
+        initial={{ opacity: 0, x: 12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.2 }}
+        className="flex h-full w-full flex-col gap-4 overflow-y-auto border-l border-[var(--border)] bg-[var(--surface)] p-4"
+      >
+        <Field label="Title">
+          <input
+            className={inputClass}
+            value={data.title}
+            onChange={(e) => updateNode(node.id, { title: e.target.value })}
+          />
+        </Field>
+
+        <Field label="Description">
+          <textarea
+            className={`${inputClass} min-h-20 resize-none`}
+            value={data.description}
+            onChange={(e) =>
+              updateNode(node.id, { description: e.target.value })
+            }
+          />
+        </Field>
+
+        <Field label="Pros">
+          <textarea
+            className={`${inputClass} min-h-16 resize-none`}
+            placeholder="One pro per line"
+            value={data.pros.join("\n")}
+            onChange={(e) =>
+              updateNode(node.id, {
+                pros: e.target.value.split("\n").filter(Boolean),
+              })
+            }
+          />
+        </Field>
+
+        <Field label="Cons">
+          <textarea
+            className={`${inputClass} min-h-16 resize-none`}
+            placeholder="One con per line"
+            value={data.cons.join("\n")}
+            onChange={(e) =>
+              updateNode(node.id, {
+                cons: e.target.value.split("\n").filter(Boolean),
+              })
+            }
+          />
+        </Field>
+
+        <Field label="Risk">
+          <div className="flex gap-2">
+            {RISK_OPTIONS.map((risk) => (
+              <button
+                key={risk}
+                onClick={() => updateNode(node.id, { risk })}
+                className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors duration-200 ${
+                  data.risk === risk
+                    ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                    : "border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)]"
+                }`}
+              >
+                {risk}
+              </button>
+            ))}
+          </div>
+        </Field>
+
+        <Field label={`Confidence — ${data.confidence}%`}>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={data.confidence}
+            onChange={(e) =>
+              updateNode(node.id, { confidence: Number(e.target.value) })
+            }
+            className="w-full accent-[var(--primary)]"
+          />
+        </Field>
+
+        <Field label="Cost">
+          <input
+            className={inputClass}
+            value={data.cost}
+            onChange={(e) => updateNode(node.id, { cost: e.target.value })}
+          />
+        </Field>
+
+        <Field label="Notes">
+          <textarea
+            className={`${inputClass} min-h-16 resize-none`}
+            value={data.notes}
+            onChange={(e) => updateNode(node.id, { notes: e.target.value })}
+          />
+        </Field>
+
+        <Field label="Color">
+          <div className="flex gap-2">
+            {COLOR_OPTIONS.map((color) => (
+              <button
+                key={color}
+                onClick={() => updateNode(node.id, { color })}
+                style={{ background: color }}
+                className={`h-7 w-7 rounded-full transition-transform duration-200 hover:scale-110 ${
+                  data.color === color
+                    ? "ring-2 ring-[var(--primary)] ring-offset-2 ring-offset-[var(--surface)]"
+                    : ""
+                }`}
+              />
+            ))}
+          </div>
+        </Field>
+
+        <button
+          onClick={() => deleteNode(node.id)}
+          className="mt-2 flex items-center justify-center gap-2 rounded-lg border border-red-500/30 px-4 py-2.5 text-sm font-medium text-red-500 transition-colors duration-200 hover:bg-red-500/10"
+        >
+          <Trash2 size={16} />
+          Delete Decision
+        </button>
+      </motion.aside>
+    </AnimatePresence>
+  );
+}
