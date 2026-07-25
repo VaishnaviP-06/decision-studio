@@ -7,24 +7,45 @@ import Sidebar from "../layout/Sidebar";
 import RightPanel from "../panels/RightPanel";
 import DecisionCanvas from "../canvas/DecisionCanvas";
 import DecisionToolbar from "./toolbar/DecisionToolbar";
+import CommandPalette from "../common/CommandPalette";
+import PresentationView from "./PresentationView";
 import { useDecisionStore } from "../../store/decisionStore";
+import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 
 export default function StudioLayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const selectedNodeId = useDecisionStore((s) => s.selectedNodeId);
+  const presentationMode = useDecisionStore((s) => s.presentationMode);
+
+  useKeyboardShortcuts({ onOpenPalette: () => setPaletteOpen((v) => !v) });
+
+  if (presentationMode) {
+    return (
+      <AnimatePresence>
+        <PresentationView />
+      </AnimatePresence>
+    );
+  }
 
   return (
     <ReactFlowProvider>
       <div className="flex h-[calc(100vh-4rem)] w-full overflow-hidden">
         {/* Desktop sidebar */}
-        <div className="hidden md:block md:w-72 lg:w-80">
-          <Sidebar />
+        <div
+          className={`hidden md:block ${sidebarCollapsed ? "md:w-16" : "md:w-72 lg:w-80"} transition-[width] duration-200`}
+        >
+          <Sidebar
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+          />
         </div>
 
         {/* Center: toolbar + canvas */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <DecisionToolbar />
+          <DecisionToolbar onOpenPalette={() => setPaletteOpen(true)} />
           <div className="relative flex-1">
             <DecisionCanvas />
           </div>
@@ -118,6 +139,8 @@ export default function StudioLayout() {
             </>
           )}
         </AnimatePresence>
+
+        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       </div>
     </ReactFlowProvider>
   );

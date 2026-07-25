@@ -1,5 +1,12 @@
 export type RiskLevel = "Low" | "Medium" | "High";
 
+export type RelationshipType = "supports" | "depends" | "blocks" | "alternative";
+
+export type EdgeRelationshipData = {
+  relationship: RelationshipType;
+  [key: string]: unknown;
+};
+
 export type Decision = {
   id: string;
   title: string;

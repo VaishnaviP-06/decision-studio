@@ -4,7 +4,7 @@ import type { Connection, Edge, EdgeChange, NodeChange } from "@xyflow/react";
 import { addEdge, applyEdgeChanges, applyNodeChanges } from "@xyflow/react";
 import type { Node } from "@xyflow/react";
 
-import type { Decision, DecisionTemplate } from "../types/decision";
+import type { Decision, DecisionTemplate, RelationshipType } from "../types/decision";
 
 export type DecisionNodeType = Node<Decision, "decision">;
 
@@ -27,6 +27,8 @@ type DecisionStore = {
   nodes: DecisionNodeType[];
   edges: Edge[];
   selectedNodeId: string | null;
+  pendingEdgeId: string | null;
+  presentationMode: boolean;
 
   addNode: (partial?: Partial<Decision>) => string;
   deleteNode: (id: string) => void;
@@ -36,6 +38,12 @@ type DecisionStore = {
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   onConnect: (connection: Connection) => void;
+
+  setPendingEdge: (id: string | null) => void;
+  setEdgeRelationship: (id: string, relationship: RelationshipType) => void;
+
+  arrangeNodes: () => void;
+  setPresentationMode: (value: boolean) => void;
 
   applyTemplate: (template: DecisionTemplate) => void;
   clearCanvas: () => void;
@@ -68,6 +76,8 @@ export const useDecisionStore = create<DecisionStore>()(
       nodes: [],
       edges: [],
       selectedNodeId: null,
+      pendingEdgeId: null,
+      presentationMode: false,
 
       addNode: (partial) => {
         const decision = defaultDecision(partial);
@@ -119,10 +129,57 @@ export const useDecisionStore = create<DecisionStore>()(
       },
 
       onConnect: (connection) => {
+        const id = `edge-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         set((state) => ({
-          edges: addEdge({ ...connection, animated: true, type: "smoothstep" }, state.edges),
+          edges: addEdge(
+            {
+              ...connection,
+              id,
+              type: "relationship",
+              data: { relationship: "supports" },
+            },
+            state.edges
+          ),
+          pendingEdgeId: id,
         }));
       },
+
+      setPendingEdge: (id) => set({ pendingEdgeId: id }),
+
+      setEdgeRelationship: (id, relationship) => {
+        set((state) => ({
+          edges: state.edges.map((e) =>
+            e.id === id ? { ...e, data: { ...e.data, relationship } } : e
+          ),
+        }));
+      },
+
+      arrangeNodes: () => {
+        set((state) => {
+          const spacingY = 200;
+          const centerX = 300;
+
+          // Simple top-to-bottom arrangement: sort by existing y so relative
+          // order feels stable, then space nodes evenly in a single column.
+          const ordered = [...state.nodes].sort(
+            (a, b) => a.position.y - b.position.y
+          );
+
+          const arranged = ordered.map((n, i) => {
+            const position = { x: centerX, y: 80 + i * spacingY };
+            return { ...n, position, data: { ...n.data, position } };
+          });
+
+          // Preserve original array order for stable selection/list rendering,
+          // just with updated positions.
+          const byId = new Map(arranged.map((n) => [n.id, n]));
+          const nodes = state.nodes.map((n) => byId.get(n.id) ?? n);
+
+          return { nodes };
+        });
+      },
+
+      setPresentationMode: (value) => set({ presentationMode: value }),
 
       applyTemplate: (template) => {
         const base = { x: 160, y: 80 };
@@ -144,8 +201,8 @@ export const useDecisionStore = create<DecisionStore>()(
           id: `${created[from].id}-${created[to].id}`,
           source: created[from].id,
           target: created[to].id,
-          animated: true,
-          type: "smoothstep",
+          type: "relationship",
+          data: { relationship: "supports" },
         }));
 
         set((state) => ({
@@ -155,7 +212,8 @@ export const useDecisionStore = create<DecisionStore>()(
         }));
       },
 
-      clearCanvas: () => set({ nodes: [], edges: [], selectedNodeId: null }),
+      clearCanvas: () =>
+        set({ nodes: [], edges: [], selectedNodeId: null, pendingEdgeId: null }),
 
       save: () => {
         // persist middleware writes automatically; exposed for explicit "Save" action

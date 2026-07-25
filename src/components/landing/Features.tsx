@@ -36,7 +36,7 @@ export default function Features() {
   return (
     <section
       id="features"
-      className="mx-auto max-w-7xl px-6 py-28"
+      className="scroll-mt-24 mx-auto max-w-7xl px-6 py-28"
     >
       <div className="mb-14 text-center">
         <h2 className="text-4xl font-bold">

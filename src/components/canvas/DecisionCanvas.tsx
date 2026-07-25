@@ -2,15 +2,21 @@ import "@xyflow/react/dist/style.css";
 
 import { useCallback } from "react";
 import { Background, ReactFlow } from "@xyflow/react";
-import type { Node } from "@xyflow/react";
+import type { Edge, Node } from "@xyflow/react";
 import { motion } from "framer-motion";
 import { Plus, Workflow } from "lucide-react";
 
 import { useDecisionStore } from "../../store/decisionStore";
 import DecisionNode from "../nodes/DecisionNode";
+import RelationshipEdge from "./edges/RelationshipEdge";
+import RelationshipPicker from "./RelationshipPicker";
 
 const nodeTypes = {
   decision: DecisionNode,
+};
+
+const edgeTypes = {
+  relationship: RelationshipEdge,
 };
 
 function EmptyCanvasState() {
@@ -49,13 +55,18 @@ function EmptyCanvasState() {
   );
 }
 
-export default function DecisionCanvas() {
+export default function DecisionCanvas({
+  readOnly = false,
+}: {
+  readOnly?: boolean;
+}) {
   const nodes = useDecisionStore((s) => s.nodes);
   const edges = useDecisionStore((s) => s.edges);
   const onNodesChange = useDecisionStore((s) => s.onNodesChange);
   const onEdgesChange = useDecisionStore((s) => s.onEdgesChange);
   const onConnect = useDecisionStore((s) => s.onConnect);
   const selectNode = useDecisionStore((s) => s.selectNode);
+  const setPendingEdge = useDecisionStore((s) => s.setPendingEdge);
 
   const handleNodeClick = useCallback(
     (_: unknown, node: Node) => selectNode(node.id),
@@ -64,25 +75,37 @@ export default function DecisionCanvas() {
 
   const handlePaneClick = useCallback(() => selectNode(null), [selectNode]);
 
+  const handleEdgeClick = useCallback(
+    (_: unknown, edge: Edge) => setPendingEdge(edge.id),
+    [setPendingEdge]
+  );
+
   return (
     <div className="relative h-full w-full">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onNodeClick={handleNodeClick}
-        onPaneClick={handlePaneClick}
-        deleteKeyCode={["Backspace", "Delete"]}
+        onNodeClick={readOnly ? undefined : handleNodeClick}
+        onEdgeClick={readOnly ? undefined : handleEdgeClick}
+        onPaneClick={readOnly ? undefined : handlePaneClick}
+        deleteKeyCode={readOnly ? [] : ["Backspace", "Delete"]}
+        nodesDraggable={!readOnly}
+        nodesConnectable={!readOnly}
+        elementsSelectable={!readOnly}
         fitView
         proOptions={{ hideAttribution: true }}
       >
         <Background gap={24} size={1} />
       </ReactFlow>
 
-      {nodes.length === 0 && <EmptyCanvasState />}
+      {!readOnly && <RelationshipPicker />}
+
+      {!readOnly && nodes.length === 0 && <EmptyCanvasState />}
     </div>
   );
 }

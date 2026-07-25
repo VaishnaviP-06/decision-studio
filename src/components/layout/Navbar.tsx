@@ -19,19 +19,26 @@ const Navbar = () => {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <a
-            href="#features"
+          <Link
+            to="/"
+            className="text-sm text-[var(--text-muted)] transition hover:text-[var(--text)]"
+          >
+            Home
+          </Link>
+
+          <Link
+            to="/#features"
             className="text-sm text-[var(--text-muted)] transition hover:text-[var(--text)]"
           >
             Features
-          </a>
+          </Link>
 
-          <a
-            href="#preview"
+          <Link
+            to="/#preview"
             className="text-sm text-[var(--text-muted)] transition hover:text-[var(--text)]"
           >
             Preview
-          </a>
+          </Link>
 
           <Link
             to="/studio"
