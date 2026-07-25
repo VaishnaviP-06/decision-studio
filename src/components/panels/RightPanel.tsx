@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 
 import { useDecisionStore } from "../../store/decisionStore";
 import type { RiskLevel } from "../../types/decision";
+import DecisionAnalytics from "../analysis/DecisionAnalytics";
+import RecommendationCard from "../analysis/RecommendationCard";
 
 const RISK_OPTIONS: RiskLevel[] = ["Low", "Medium", "High"];
 const COLOR_OPTIONS = ["#6366F1", "#10B981", "#F59E0B", "#EC4899", "#0EA5E9", "#A855F7"];
@@ -46,7 +48,9 @@ export default function RightPanel() {
         <p className="text-sm text-[var(--text-muted)]">
           Select a decision
           <br />
-          to edit details
+          View insights, analyze trade-offs,
+          <br />
+          and improve decisions.
         </p>
       </aside>
     );
@@ -175,6 +179,14 @@ export default function RightPanel() {
               ))}
             </div>
           </Field>
+        </Section>
+
+        <Section title="Decision Analytics">
+          <DecisionAnalytics decision={data} />
+        </Section>
+
+        <Section title="Recommendation">
+          <RecommendationCard decision={data} />
         </Section>
 
         <Section title="Actions">
