@@ -3,6 +3,8 @@ import "@xyflow/react/dist/style.css";
 import { useCallback } from "react";
 import { Background, ReactFlow } from "@xyflow/react";
 import type { Node } from "@xyflow/react";
+import { motion } from "framer-motion";
+import { Plus, Workflow } from "lucide-react";
 
 import { useDecisionStore } from "../../store/decisionStore";
 import DecisionNode from "../nodes/DecisionNode";
@@ -10,6 +12,42 @@ import DecisionNode from "../nodes/DecisionNode";
 const nodeTypes = {
   decision: DecisionNode,
 };
+
+function EmptyCanvasState() {
+  const addNode = useDecisionStore((s) => s.addNode);
+
+  return (
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="pointer-events-auto flex max-w-xs flex-col items-center gap-3 text-center"
+      >
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+          <Workflow size={18} className="text-[var(--text-muted)]" />
+        </div>
+
+        <div>
+          <p className="text-sm font-semibold text-[var(--text)]">
+            Create your first decision
+          </p>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
+            Map options, compare trade-offs, and make smarter choices.
+          </p>
+        </div>
+
+        <button
+          onClick={() => addNode()}
+          className="mt-1 flex items-center gap-1.5 rounded-lg bg-[var(--primary)] px-3.5 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+        >
+          <Plus size={14} />
+          Create Decision
+        </button>
+      </motion.div>
+    </div>
+  );
+}
 
 export default function DecisionCanvas() {
   const nodes = useDecisionStore((s) => s.nodes);
@@ -27,7 +65,7 @@ export default function DecisionCanvas() {
   const handlePaneClick = useCallback(() => selectNode(null), [selectNode]);
 
   return (
-    <div className="h-full w-full">
+    <div className="relative h-full w-full">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -43,6 +81,8 @@ export default function DecisionCanvas() {
       >
         <Background gap={24} size={1} />
       </ReactFlow>
+
+      {nodes.length === 0 && <EmptyCanvasState />}
     </div>
   );
 }

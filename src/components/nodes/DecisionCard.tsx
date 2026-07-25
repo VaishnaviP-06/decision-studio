@@ -1,8 +1,4 @@
 import { Handle, Position } from "@xyflow/react";
-import {
-  CircleDollarSign,
-  ShieldAlert,
-} from "lucide-react";
 
 type DecisionCardData = {
   title: string;
@@ -10,6 +6,14 @@ type DecisionCardData = {
   risk: "Low" | "Medium" | "High";
   cost: string;
   color: string;
+  pros?: string[];
+  cons?: string[];
+};
+
+const RISK_STYLES: Record<DecisionCardData["risk"], string> = {
+  Low: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
+  Medium: "text-amber-600 dark:text-amber-400 bg-amber-500/10",
+  High: "text-rose-600 dark:text-rose-400 bg-rose-500/10",
 };
 
 export default function DecisionCard({
@@ -17,61 +21,72 @@ export default function DecisionCard({
 }: {
   data: DecisionCardData;
 }) {
-  return (
-    <div className="w-64 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <Handle type="target" position={Position.Top} />
+  const prosCount = data.pros?.length ?? 0;
+  const consCount = data.cons?.length ?? 0;
 
-      <div className="flex items-center gap-3">
-        <div
-          className="h-10 w-10 rounded-xl"
+  return (
+    <div className="w-64 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="!h-2 !w-2 !border-none !bg-[var(--text-muted)]"
+      />
+
+      <div className="mb-3 flex items-center gap-1.5">
+        <span
+          className="h-1.5 w-1.5 rounded-full"
           style={{ background: data.color }}
         />
-
-        <div>
-          <h3 className="font-semibold">{data.title}</h3>
-
-          <p className="text-xs text-[var(--text-muted)]">
-            Strategic Decision
-          </p>
-        </div>
+        <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+          Decision
+        </span>
       </div>
 
-      <div className="mt-5">
-        <div className="mb-2 flex justify-between text-sm">
-          <span>Confidence</span>
+      <h3 className="mb-4 text-[15px] font-semibold leading-snug text-[var(--text)]">
+        {data.title || "Untitled Decision"}
+      </h3>
 
-          <span>{data.confidence}%</span>
+      <div className="mb-4">
+        <div className="mb-1.5 flex items-center justify-between text-xs">
+          <span className="text-[var(--text-muted)]">Confidence</span>
+          <span className="font-medium text-[var(--text)]">
+            {data.confidence}%
+          </span>
         </div>
 
-        <div className="h-2 rounded-full bg-zinc-200 dark:bg-zinc-700">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-secondary)]">
           <div
-            className="h-full rounded-full bg-indigo-500"
-            style={{
-              width: `${data.confidence}%`,
-            }}
+            className="h-full rounded-full bg-[var(--primary)] transition-[width] duration-300 ease-out"
+            style={{ width: `${data.confidence}%` }}
           />
         </div>
       </div>
 
-      <div className="mt-5 flex justify-between text-sm">
-        <span className="flex items-center gap-1">
-          <ShieldAlert size={14} />
-          Risk
-        </span>
+      <div className="mb-3 flex flex-col gap-2 text-xs">
+        <div className="flex items-center justify-between">
+          <span className="text-[var(--text-muted)]">Risk</span>
+          <span
+            className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${RISK_STYLES[data.risk]}`}
+          >
+            {data.risk}
+          </span>
+        </div>
 
-        <span>{data.risk}</span>
+        <div className="flex items-center justify-between">
+          <span className="text-[var(--text-muted)]">Cost</span>
+          <span className="font-medium text-[var(--text)]">{data.cost}</span>
+        </div>
       </div>
 
-      <div className="mt-2 flex justify-between text-sm">
-        <span className="flex items-center gap-1">
-          <CircleDollarSign size={14} />
-          Cost
-        </span>
-
-        <span>{data.cost}</span>
+      <div className="border-t border-[var(--border)] pt-2.5 text-[11px] text-[var(--text-muted)]">
+        {prosCount} Pros &bull; {consCount} Cons
       </div>
 
-      <Handle type="source" position={Position.Bottom} />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="!h-2 !w-2 !border-none !bg-[var(--text-muted)]"
+      />
     </div>
   );
 }
